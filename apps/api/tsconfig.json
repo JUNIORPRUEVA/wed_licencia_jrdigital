@@ -1,0 +1,18 @@
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "types": ["node"],
+    "lib": ["ES2022"],
+    "rootDir": ".",
+    "outDir": "./dist",
+    "module": "ESNext",
+    "moduleResolution": "Bundler"
+  },
+  "include": [
+    "src/index.ts",
+    "src/env.ts",
+    "src/prisma.ts",
+    "src/types.d.ts",
+    "prisma/seed.ts"
+  ]
+}

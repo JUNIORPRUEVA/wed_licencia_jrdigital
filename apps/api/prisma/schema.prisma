@@ -1,0 +1,415 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum RoleCode {
+  ADMIN
+  SALES
+  SUPPORT
+  VIEWER
+}
+
+enum TenantStatus {
+  ACTIVE
+  INACTIVE
+}
+
+enum ProductStatus {
+  DRAFT
+  PUBLISHED
+  ARCHIVED
+}
+
+enum LicenseModel {
+  SUBSCRIPTION
+  PERPETUAL
+}
+
+enum LicenseType {
+  DEMO
+  FULL
+}
+
+enum LicenseStatus {
+  ACTIVE
+  SUSPENDED
+  EXPIRED
+  REVOKED
+}
+
+enum OfflineRequestStatus {
+  RECEIVED
+  USED
+  REJECTED
+}
+
+enum OrderStatus {
+  DRAFT
+  PENDING_PAYMENT
+  PAID
+  CANCELLED
+  REFUNDED
+}
+
+enum ActivationAttemptResult {
+  SUCCESS
+  INVALID_KEY
+  APP_MISMATCH
+  EXPIRED
+  REVOKED
+  SUSPENDED
+  DEVICE_LIMIT
+  VERSION_BLOCKED
+  OFFLINE_NOT_ALLOWED
+  ERROR
+}
+
+enum VoucherStatus {
+  UNUSED
+  USED
+  CANCELLED
+  EXPIRED
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  name         String?
+  passwordHash String
+  isActive     Boolean  @default(true)
+  roleId       String
+  role         Role     @relation(fields: [roleId], references: [id])
+  lastLoginAt  DateTime?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  auditLogs     AuditLog[]
+  refreshTokens RefreshToken[]
+  orders        Order[] @relation("OrderCreatedBy")
+  createdLicenses License[] @relation("LicenseCreatedBy")
+  createdOfflineRequests OfflineRequest[] @relation("OfflineRequestCreatedBy")
+  createdOfflineFiles OfflineLicenseFile[] @relation("OfflineLicenseFileCreatedBy")
+  updatedSettings Setting[] @relation("SettingUpdatedBy")
+  createdVouchers Voucher[] @relation("VoucherCreatedBy")
+}
+
+model Role {
+  id          String   @id @default(uuid())
+  code        RoleCode @unique
+  name        String
+  description String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  users       User[]
+  permissions RolePermission[]
+}
+
+model Permission {
+  id          String   @id @default(uuid())
+  key         String   @unique
+  description String?
+  createdAt   DateTime @default(now())
+
+  roles RolePermission[]
+}
+
+model RolePermission {
+  roleId       String
+  permissionId String
+  role         Role       @relation(fields: [roleId], references: [id])
+  permission   Permission @relation(fields: [permissionId], references: [id])
+
+  @@id([roleId, permissionId])
+}
+
+model Tenant {
+  id           String       @id @default(uuid())
+  tradeName    String
+  legalName    String?
+  rnc          String?
+  address      String?
+  contactEmail String?
+  contactPhone String?
+  status       TenantStatus @default(ACTIVE)
+  createdAt    DateTime     @default(now())
+  updatedAt    DateTime     @updatedAt
+
+  licenses       License[]
+  offlineRequests OfflineRequest[]
+  orders         Order[]
+  vouchers      Voucher[]
+}
+
+model Product {
+  id                   String         @id @default(uuid())
+  name                 String
+  slug                 String         @unique
+  shortDescription     String
+  longDescription      String
+  features             String[]       @default([])
+  priceCents           Int
+  currency             String
+  licenseModel         LicenseModel
+  demoAvailable        Boolean        @default(false)
+  demoDays             Int?
+  currentVersion       String
+  images               String[]       @default([])
+  publicOrder          Int?
+  promoVideoUrl        String?
+  manualFileUrl        String?
+  faq                  Json?
+  status               ProductStatus  @default(DRAFT)
+  offlineRequestVerifyKey String?
+  createdAt            DateTime       @default(now())
+  updatedAt            DateTime       @updatedAt
+
+  assets   ProductAsset[]
+  licenses License[]
+  orderItems OrderItem[]
+  activationAttempts ActivationAttempt[]
+  offlineRequests OfflineRequest[]
+  vouchers Voucher[]
+}
+
+model ProductAsset {
+  id        String   @id @default(uuid())
+  productId String
+  product   Product  @relation(fields: [productId], references: [id])
+  platform  String
+  version   String
+  url       String
+  sha256    String?
+  fileSize  Int?
+  isDemo    Boolean  @default(false)
+  isActive  Boolean  @default(true)
+  createdAt DateTime @default(now())
+
+  @@index([productId, isActive, isDemo])
+}
+
+model License {
+  id               String        @id @default(uuid())
+  tenantId         String
+  tenant           Tenant        @relation(fields: [tenantId], references: [id])
+  productId        String
+  product          Product       @relation(fields: [productId], references: [id])
+  key              String        @unique
+  type             LicenseType
+  planType         LicenseModel
+  status           LicenseStatus @default(ACTIVE)
+  startsAt         DateTime?
+  expiresAt        DateTime?
+  maxDevices       Int           @default(1)
+  maxActivations   Int           @default(1)
+  offlineAllowed   Boolean       @default(true)
+  revalidateDays   Int?
+  allowedVersionMin String?
+  allowedVersionMax String?
+  modules          Json          @default("{}")
+  features         Json          @default("{}")
+  notes            String?
+  createdByUserId  String?
+  createdByUser    User?         @relation("LicenseCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt        DateTime      @default(now())
+  updatedAt        DateTime      @updatedAt
+
+  activations       DeviceActivation[]
+  offlineLicenseFiles OfflineLicenseFile[]
+  offlineRequests   OfflineRequest[]
+  activationAttempts ActivationAttempt[] @relation("LicenseActivationAttempt")
+  vouchers Voucher[]
+
+  @@index([tenantId, productId, status])
+}
+
+model Voucher {
+  id                  String        @id @default(uuid())
+  code                String        @unique
+  status              VoucherStatus @default(UNUSED)
+
+  productId           String
+  product             Product       @relation(fields: [productId], references: [id])
+  licenseType         LicenseType
+  planType            LicenseModel
+  licenseDurationDays Int?
+
+  maxDevices          Int           @default(1)
+  maxActivations      Int           @default(1)
+  offlineAllowed      Boolean       @default(true)
+  revalidateDays      Int?
+  allowedVersionMin   String?
+  allowedVersionMax   String?
+  modules             Json          @default("{}")
+  features            Json          @default("{}")
+  notes               String?
+
+  batchName           String?
+
+  tenantId            String?
+  tenant              Tenant?       @relation(fields: [tenantId], references: [id])
+  licenseId           String?
+  license             License?      @relation(fields: [licenseId], references: [id])
+
+  usedAt              DateTime?
+  usedByEmail         String?
+
+  createdByUserId     String?
+  createdByUser       User?         @relation("VoucherCreatedBy", fields: [createdByUserId], references: [id])
+
+  createdAt           DateTime      @default(now())
+  updatedAt           DateTime      @updatedAt
+
+  @@index([status, createdAt])
+  @@index([productId, createdAt])
+}
+
+model DeviceActivation {
+  id         String   @id @default(uuid())
+  licenseId  String
+  license    License  @relation(fields: [licenseId], references: [id])
+  deviceIdHash String
+  appVersion String?
+  activatedAt DateTime @default(now())
+  lastSeenAt  DateTime @default(now())
+  revokedAt   DateTime?
+  ip          String?
+  userAgent   String?
+
+  @@unique([licenseId, deviceIdHash])
+  @@index([licenseId, activatedAt])
+}
+
+model OfflineRequest {
+  id         String   @id @default(uuid())
+  productId  String
+  product    Product  @relation(fields: [productId], references: [id])
+  tenantId   String?
+  tenant     Tenant?  @relation(fields: [tenantId], references: [id])
+  licenseId  String?
+  license    License? @relation(fields: [licenseId], references: [id])
+  nonce      String   @unique
+  payloadJson Json
+  payloadHash String
+  status     OfflineRequestStatus @default(RECEIVED)
+  usedAt     DateTime?
+  createdByUserId String?
+  createdByUser User?  @relation("OfflineRequestCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt  DateTime @default(now())
+
+  licenseFiles OfflineLicenseFile[]
+
+  @@index([productId, status, createdAt])
+}
+
+model OfflineLicenseFile {
+  id               String   @id @default(uuid())
+  offlineRequestId String
+  offlineRequest   OfflineRequest @relation(fields: [offlineRequestId], references: [id])
+  licenseId        String
+  license          License  @relation(fields: [licenseId], references: [id])
+  fileName         String
+  payloadJson      Json
+  signature        String
+  publicKey        String
+  storageUrl       String?
+  s3Key            String?
+  sha256           String?
+  fileSize         Int?
+  createdByUserId  String?
+  createdByUser    User?    @relation("OfflineLicenseFileCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt        DateTime @default(now())
+
+  @@index([licenseId, createdAt])
+}
+
+model Order {
+  id             String      @id @default(uuid())
+  tenantId       String
+  tenant         Tenant      @relation(fields: [tenantId], references: [id])
+  status         OrderStatus @default(PENDING_PAYMENT)
+  totalCents     Int
+  notes          String?
+  paidAt         DateTime?
+  createdByUserId String?
+  createdByUser  User?       @relation("OrderCreatedBy", fields: [createdByUserId], references: [id])
+  createdAt      DateTime    @default(now())
+
+  items OrderItem[]
+}
+
+model OrderItem {
+  id             String   @id @default(uuid())
+  orderId        String
+  order          Order    @relation(fields: [orderId], references: [id])
+  productId      String
+  product        Product  @relation(fields: [productId], references: [id])
+  quantity       Int      @default(1)
+  unitPriceCents Int
+  licenseType    LicenseType
+
+  @@index([orderId])
+}
+
+model ActivationAttempt {
+  id          String   @id @default(uuid())
+  productId   String
+  product     Product  @relation(fields: [productId], references: [id])
+  licenseId   String?
+  license     License? @relation("LicenseActivationAttempt", fields: [licenseId], references: [id])
+  licenseKey  String?
+  deviceIdHash String?
+  ip          String?
+  result      ActivationAttemptResult
+  reason      String?
+  createdAt   DateTime @default(now())
+
+  @@index([productId, createdAt])
+  @@index([ip, createdAt])
+}
+
+model AuditLog {
+  id          String   @id @default(uuid())
+  actorUserId String?
+  actorUser   User?    @relation(fields: [actorUserId], references: [id])
+  actorEmail  String?
+  action      String
+  entityType  String
+  entityId    String?
+  diff        Json?
+  ip          String?
+  userAgent   String?
+  createdAt   DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([actorUserId, createdAt])
+  @@index([entityType, entityId])
+}
+
+model Setting {
+  id        String   @id @default(uuid())
+  key       String   @unique
+  valueJson Json
+  updatedByUserId String?
+  updatedByUser   User?    @relation("SettingUpdatedBy", fields: [updatedByUserId], references: [id])
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model RefreshToken {
+  id           String   @id @default(uuid())
+  userId       String
+  user         User     @relation(fields: [userId], references: [id])
+  tokenHash    String   @unique
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  replacedByTokenId String?
+  ip           String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+}

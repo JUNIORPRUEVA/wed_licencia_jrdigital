@@ -1,0 +1,26 @@
+# Monorepo
+node_modules/
+
+# Next
+**/.next/
+**/out/
+
+# Builds
+**/dist/
+**/build/
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Env
+.env*
+
+# Prisma
+**/prisma/dev.db
+
+# OS
+.DS_Store
+Thumbs.db
