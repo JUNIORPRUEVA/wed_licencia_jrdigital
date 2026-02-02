@@ -51,5 +51,8 @@ WORKDIR /app/backend
 
 EXPOSE 4000
 
+HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
+	CMD wget -qO- http://127.0.0.1:4000/health > /dev/null || exit 1
+
 # Run migrations and start
 CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx dist/src/index.js"]
