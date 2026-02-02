@@ -15,11 +15,25 @@ COPY packages/shared/package.json ./packages/shared/
 COPY frontend/package.json ./frontend/
 
 # Install dependencies
-RUN npm ci --include=dev --include=optional --workspace=web --workspace=@fulltech/shared --workspace=@fulltech/crypto
+RUN npm install --include=dev --include=optional --no-audit --no-fund --workspace=web --workspace=@fulltech/shared --workspace=@fulltech/crypto
+
+# Sanity-check native optional deps (fails fast if the Linux binary wasn't installed)
+RUN cd frontend && node -e "require('lightningcss')"
 
 # Build frontend
 FROM base AS builder
 WORKDIR /app
+
+# Build-time args (Easypanel provides these as --build-arg)
+ARG NEXT_PUBLIC_API_URL
+ARG API_PROXY_TARGET
+ARG PORT=3000
+ARG GIT_SHA
+
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV API_PROXY_TARGET=$API_PROXY_TARGET
+ENV PORT=$PORT
+ENV NEXT_TELEMETRY_DISABLED=1
 
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
@@ -41,6 +55,9 @@ FROM base AS runner
 WORKDIR /app
 
 ENV NODE_ENV=production
+ENV NEXT_TELEMETRY_DISABLED=1
+
+ARG PORT=3000
 
 # Create user
 RUN addgroup --system --gid 1001 nodejs
@@ -55,7 +72,7 @@ USER nextjs
 
 EXPOSE 3000
 
-ENV PORT=3000
+ENV PORT=$PORT
 ENV HOSTNAME="0.0.0.0"
 
 CMD ["node", "server.js"]

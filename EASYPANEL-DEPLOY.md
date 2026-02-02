@@ -168,6 +168,10 @@ docker run -p 3000:3000 fulltech-frontend
 - Verificar CORS_ORIGIN en backend incluye dominio del frontend
 - Verificar rewrites en next.config.ts
 
+### Frontend falla con `Cannot find module '../lightningcss.linux-x64-gnu.node'`:
+- Causa común: tu `package-lock.json` fue generado en Windows, y `npm ci` en Linux no siempre instala los *optional deps* nativos (como `lightningcss-linux-x64-gnu`) si no están presentes en el lock.
+- Solución aplicada: el `frontend/Dockerfile` usa `npm install --include=optional` (no `npm ci`) y valida `require('lightningcss')` durante el build para fallar rápido si el binario no quedó instalado.
+
 ### Error "Prisma Client not generated":
 - El Dockerfile ya incluye `npx prisma generate`
 - Verificar que build se completó sin errores
