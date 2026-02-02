@@ -1,5 +1,6 @@
 # Monorepo
-node_modules/
+# Node modules inside each package
+**/node_modules/
 
 # Next
 **/.next/

@@ -7,7 +7,7 @@ const prisma = new PrismaClient();
 function requireEnv(key: string) {
   const v = process.env[key];
   if (!v) {
-    throw new Error(`Missing env var: ${key}. Copy apps/api/.env.example to apps/api/.env and fill values.`);
+    throw new Error(`Missing env var: ${key}. Copy backend/.env.example to backend/.env and fill values.`);
   }
   return v;
 }

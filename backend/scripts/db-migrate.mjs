@@ -4,7 +4,7 @@ function requireEnv(key) {
   const v = process.env[key];
   if (!v) {
     console.error(`Missing env var: ${key}`);
-    console.error("Copy apps/api/.env.example to apps/api/.env and fill values.");
+    console.error("Copy backend/.env.example to backend/.env and fill values.");
     process.exit(1);
   }
   return v;

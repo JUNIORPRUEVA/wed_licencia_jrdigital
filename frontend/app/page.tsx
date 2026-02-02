@@ -1,0 +1,523 @@
+import {
+  BarChart3,
+  CheckCircle2,
+  Cloud,
+  FileText,
+  Layers,
+  Menu,
+  ShieldCheck,
+  Smartphone,
+  X,
+  Zap,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+
+type Product = {
+  id: string;
+  name: string;
+  slug: string;
+  shortDescription?: string;
+  longDescription?: string;
+  features?: string[];
+  priceCents?: number;
+  currency?: string;
+  demoAvailable?: boolean;
+  images?: string[];
+  currentVersion?: string;
+};
+
+async function fetchProducts(): Promise<Product[]> {
+  try {
+    const configured = (process.env.NEXT_PUBLIC_API_URL ?? "/api").trim().replace(/\/$/, "");
+    const serverTarget = (process.env.API_PROXY_TARGET || "http://localhost:4000").replace(/\/$/, "");
+    const base = configured.startsWith("/") ? serverTarget : configured;
+    const url = `${base}/public/products`;
+
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), 7000);
+    const res = await fetch(url, { next: { revalidate: 60 } as any, signal: controller.signal } as any).finally(() => clearTimeout(id));
+    if (!res.ok) return [];
+    const data = await res.json();
+    if (!Array.isArray(data)) return [];
+    return data;
+  } catch {
+    return [];
+  }
+}
+
+export default async function Home() {
+  const demoEnabled = true; // Cambia a false si quieres ocultar la descarga
+  const products = await fetchProducts();
+
+  return (
+    <div className="min-h-screen bg-[#F7F7F7] text-[#2E2E2E]">
+      <input id="home-mobile-nav" type="checkbox" className="peer hidden" />
+      {/* Header */}
+      <header className="sticky top-0 z-50 border-b border-black/10 bg-gradient-to-r from-[#1E88E5] via-[#1976D2] to-[#1E88E5] text-white shadow-xl">
+        <div className="mx-auto flex h-20 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
+          <div className="flex min-w-0 items-center gap-2">
+            <div className="h-14 w-14 sm:h-16 sm:w-16 lg:h-20 lg:w-20">
+              <Image
+                src="/logo3.png"
+                alt="Jr Digital Logo"
+                width={160}
+                height={160}
+                className="h-full w-full object-contain"
+                priority
+              />
+            </div>
+            <div className="min-w-0">
+              <p className="text-[11px] uppercase tracking-[0.25em] text-white/70">Jr Digital</p>
+              <p className="max-w-[260px] text-base font-semibold leading-snug text-white sm:text-lg">
+                Transformamos tu idea en software rentable
+              </p>
+            </div>
+          </div>
+          <nav className="hidden items-center gap-6 text-xs font-semibold uppercase tracking-[0.15em] text-white/70 md:flex">
+            <a href="#fullpos" className="transition hover:text-white">
+              FULLPOS
+            </a>
+            <a href="#apps" className="transition hover:text-white">
+              Apps
+            </a>
+            <a href="#tecnologia" className="transition hover:text-white">
+              Tecnología
+            </a>
+            <a href="#productos" className="transition hover:text-white">
+              Otros productos
+            </a>
+            <a href="#contacto" className="transition hover:text-white">
+              Contacto
+            </a>
+          </nav>
+          <div className="flex items-center gap-2">
+            <a
+              href="https://wa.me/18295344286?text=Estoy%20interesado%20en%20un%20software,%20me%20gustaria%20su%20ayuda"
+              className="inline-flex items-center justify-center rounded-full bg-[#F39C12] px-6 py-3 text-sm font-semibold text-white shadow-lg transition hover:bg-[#F1C40F]"
+            >
+              Cotizar ahora
+            </a>
+            <label
+              htmlFor="home-mobile-nav"
+              className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-white/20 bg-white/10 text-white md:hidden"
+              aria-label="Abrir menú"
+            >
+              <Menu size={18} />
+            </label>
+          </div>
+        </div>
+      </header>
+
+      <div className="fixed inset-0 z-50 hidden peer-checked:block md:hidden">
+        <label htmlFor="home-mobile-nav" className="absolute inset-0 bg-black/40" aria-label="Cerrar menú" />
+        <div className="absolute inset-y-0 left-0 w-[85%] max-w-xs bg-white p-4 text-zinc-900 shadow-2xl">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className="h-10 w-10 overflow-hidden rounded-xl bg-zinc-100 ring-1 ring-zinc-200">
+                <Image src="/logo3.png" alt="Jr Digital" width={96} height={96} className="h-full w-full object-contain" />
+              </div>
+              <div>
+                <p className="text-xs font-semibold uppercase tracking-wide text-zinc-500">Jr Digital</p>
+                <p className="text-sm font-semibold text-zinc-900">Menú</p>
+              </div>
+            </div>
+            <label
+              htmlFor="home-mobile-nav"
+              className="inline-flex h-10 w-10 cursor-pointer items-center justify-center rounded-xl border border-zinc-200 bg-white text-zinc-900"
+              aria-label="Cerrar"
+            >
+              <X size={18} />
+            </label>
+          </div>
+
+          <div className="mt-6 space-y-1">
+            <a href="#fullpos" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              FULLPOS
+            </a>
+            <a href="#apps" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              Apps
+            </a>
+            <a href="#tecnologia" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              Tecnología
+            </a>
+            <a href="#productos" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              Productos
+            </a>
+            <Link href="/products" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              Catálogo
+            </Link>
+            <Link href="/demo-download" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              Descargas
+            </Link>
+            <Link href="/redeem" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              Canjear licencia
+            </Link>
+            <a href="#contacto" className="block rounded-xl px-3 py-2 text-sm font-semibold text-zinc-900 hover:bg-zinc-100">
+              Contacto
+            </a>
+          </div>
+
+          <div className="mt-6 border-t border-zinc-200 pt-4">
+            <a
+              href="https://wa.me/18295344286?text=Estoy%20interesado%20en%20un%20software,%20me%20gustaria%20su%20ayuda"
+              className="flex items-center justify-center rounded-xl bg-zinc-900 px-4 py-3 text-sm font-semibold text-white"
+            >
+              Soporte por WhatsApp
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <main className="mx-auto max-w-7xl px-4 py-16 sm:px-6 lg:px-8">
+        {/* Hero */}
+        <section className="grid items-center gap-12 lg:grid-cols-2">
+          <div>
+            <span className="inline-flex items-center gap-2 rounded-full bg-[#2E2E2E] px-4 py-1 text-xs font-semibold uppercase tracking-[0.2em] text-[#F1C40F]">
+              Software empresarial
+            </span>
+            <h1 className="mt-6 text-4xl font-bold leading-tight text-[#2E2E2E] sm:text-5xl lg:text-6xl">
+              Creamos software, apps y webs a la medida de tu negocio
+            </h1>
+            <p className="mt-6 text-lg text-[#2E2E2E]/80">
+              Desarrollamos sistemas a la medida según tu necesidad. Si buscas un software específico, habla con un asesor y te guiamos en todo el proceso. Nuestro producto activo es FULLPOS.
+            </p>
+            <div className="mt-8 flex flex-wrap gap-4">
+              <a
+                href="#productos"
+                className="inline-flex items-center justify-center rounded-full bg-[#1E88E5] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#1976D2]"
+              >
+                Ver productos
+              </a>
+              <a
+                href="https://wa.me/18295344286?text=Estoy%20interesado%20en%20un%20software,%20me%20gustaria%20su%20ayuda"
+                className="inline-flex items-center justify-center rounded-full border border-[#2E2E2E]/30 px-6 py-3 text-sm font-semibold text-[#2E2E2E] transition hover:border-[#2E2E2E]/60"
+              >
+                Hablar con un asesor
+              </a>
+            </div>
+            <div className="mt-8 grid grid-cols-2 gap-4 text-sm text-[#2E2E2E]/70 sm:grid-cols-4">
+              <div className="rounded-2xl bg-white px-4 py-3 shadow">
+                <p className="text-xs uppercase tracking-wide text-[#2E2E2E]/60">Multi-empresa</p>
+                <p className="text-base font-semibold text-[#2E2E2E]">CompanyId aislado</p>
+              </div>
+              <div className="rounded-2xl bg-white px-4 py-3 shadow">
+                <p className="text-xs uppercase tracking-wide text-[#2E2E2E]/60">Cloud</p>
+                <p className="text-base font-semibold text-[#2E2E2E]">Sincronización</p>
+              </div>
+              <div className="rounded-2xl bg-white px-4 py-3 shadow">
+                <p className="text-xs uppercase tracking-wide text-[#2E2E2E]/60">Seguridad</p>
+                <p className="text-base font-semibold text-[#2E2E2E]">JWT + Roles</p>
+              </div>
+              <div className="rounded-2xl bg-white px-4 py-3 shadow">
+                <p className="text-xs uppercase tracking-wide text-[#2E2E2E]/60">Reportes</p>
+                <p className="text-base font-semibold text-[#2E2E2E]">Tiempo real</p>
+              </div>
+            </div>
+          </div>
+            <div className="relative">
+              <div className="absolute -inset-4 rounded-3xl bg-gradient-to-br from-[#1E88E5]/30 via-white/40 to-[#F1C40F]/40 blur-2xl" />
+              <div className="relative overflow-hidden rounded-3xl border border-black/10 bg-white shadow-2xl">
+                <Image
+                  src="/fullpos/fullpos-hero.png"
+                  alt="Pantalla principal de FULLPOS"
+                  width={720}
+                  height={520}
+                  className="h-auto w-full object-cover"
+                  priority
+                />
+              </div>
+            </div>
+        </section>
+
+        {/* Catálogo dinámico de productos */}
+        <section id="productos" className="mt-20 scroll-mt-24">
+          <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-xl">
+            <h3 className="text-2xl font-semibold text-[#2E2E2E]">Nuestros productos</h3>
+            <p className="mt-2 text-sm text-[#2E2E2E]/70">Selecciona el software que mejor se adapte a tu negocio.</p>
+
+            {products.length === 0 ? (
+              <div className="mt-8 rounded-2xl bg-[#F7F7F7] p-6 text-center text-sm text-[#2E2E2E]/70">
+                Por el momento no hay productos publicados. Contacta con un asesor para más información.
+              </div>
+            ) : (
+              <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                {products.map((p) => (
+                  <article key={p.id} className="rounded-2xl border border-black/10 bg-white p-6 shadow">
+                    <div className="flex items-start gap-4">
+                      <div className="h-16 w-16 flex-shrink-0 overflow-hidden rounded-lg bg-[#F7F7F7]">
+                        {p.images && p.images[0] ? (
+                          <Image src={p.images[0]} alt={p.name} width={64} height={64} className="h-full w-full object-cover" />
+                        ) : (
+                          <div className="flex h-full items-center justify-center text-xs text-[#2E2E2E]/50">Sin imagen</div>
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h4 className="text-lg font-semibold text-[#2E2E2E]">{p.name}</h4>
+                        <p className="mt-1 text-sm text-[#2E2E2E]/70">{p.shortDescription}</p>
+                      </div>
+                    </div>
+
+                    <div className="mt-4 flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-3 text-sm text-[#2E2E2E]/70">
+                        <span className="rounded-full bg-[#F7F7F7] px-3 py-1">{p.currentVersion ?? "v1.0.0"}</span>
+                        <span className="text-sm font-semibold text-[#2E2E2E]">
+                          {p.priceCents ? `${(p.priceCents / 100).toFixed(2)} ${p.currency ?? "USD"}` : "Precio a medida"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <Link href={`/products/${p.slug}`} className="inline-flex items-center justify-center rounded-full border border-black/10 px-4 py-2 text-sm font-semibold text-[#2E2E2E] hover:border-black/30">
+                          Ver
+                        </Link>
+                        {p.demoAvailable ? (
+                          <a
+                            href={`/demo-download?product=${encodeURIComponent(p.slug)}`}
+                            className="inline-flex items-center justify-center rounded-full bg-[#F39C12] px-4 py-2 text-sm font-semibold text-white transition hover:bg-[#F1C40F]"
+                          >
+                            Demo
+                          </a>
+                        ) : null}
+                      </div>
+                    </div>
+
+                    {p.features && p.features.length > 0 ? (
+                      <ul className="mt-4 grid gap-2 text-sm text-[#2E2E2E]/70">
+                        {p.features.slice(0, 4).map((f, i) => (
+                          <li key={i} className="flex items-start gap-2">
+                            <CheckCircle2 className="mt-0.5 h-4 w-4 text-[#2ECC71]" />
+                            <span>{f}</span>
+                          </li>
+                        ))}
+                      </ul>
+                    ) : null}
+                  </article>
+                ))}
+              </div>
+            )}
+          </div>
+        </section>
+
+        {/* FULLPOS */}
+        <section id="fullpos" className="mt-24 scroll-mt-24">
+          <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-xl lg:p-12">
+            <div className="grid gap-12 lg:grid-cols-[1.2fr_1fr]">
+              <div>
+                <h2 className="text-3xl font-bold text-[#2E2E2E]">FULLPOS · Plataforma POS completa</h2>
+                <p className="mt-4 text-lg text-[#2E2E2E]/80">
+                  FULLPOS está diseñado para operar múltiples empresas con sus propios usuarios y terminales. Toda la información se aísla por companyId para garantizar seguridad y orden en ventas, inventario, gastos y cierres de caja.
+                </p>
+                <div className="mt-8 grid gap-4 sm:grid-cols-2">
+                  {[
+                    {
+                      title: "Ventas rápidas",
+                      text: "Tickets, pagos y cierres de caja con detalle de métodos y overrides.",
+                      icon: Zap,
+                    },
+                    {
+                      title: "Inventario inteligente",
+                      text: "Catálogos PDF/Excel, filtros por categoría/proveedor y stock actualizado.",
+                      icon: Layers,
+                    },
+                    {
+                      title: "Cloud sync",
+                      text: "Sincronización en la nube para acceder desde cualquier terminal.",
+                      icon: Cloud,
+                    },
+                    {
+                      title: "Seguridad robusta",
+                      text: "JWT, roles, refresh tokens y authGuard para proteger cada empresa.",
+                      icon: ShieldCheck,
+                    },
+                  ].map((item) => (
+                    <div key={item.title} className="rounded-2xl bg-[#F7F7F7] p-4">
+                      <item.icon className="h-6 w-6 text-[#1E88E5]" />
+                      <h3 className="mt-3 text-lg font-semibold text-[#2E2E2E]">{item.title}</h3>
+                      <p className="mt-1 text-sm text-[#2E2E2E]/70">{item.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="grid gap-6">
+                <div className="rounded-2xl border border-black/10 bg-[#F7F7F7] p-6">
+                  <p className="text-xs font-semibold uppercase tracking-[0.3em] text-[#2E2E2E]/60">Demo</p>
+                  <h3 className="mt-3 text-2xl font-semibold text-[#2E2E2E]">Descarga FULLPOS</h3>
+                  <p className="mt-2 text-sm text-[#2E2E2E]/70">
+                    Activa la demo cuando lo decidas. Comparte el instalador a tus clientes y habilita la prueba controlada.
+                  </p>
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    {demoEnabled ? (
+                      <a
+                        href="/demo-download"
+                        className="inline-flex items-center justify-center rounded-full bg-[#F39C12] px-6 py-3 text-sm font-semibold text-white transition hover:bg-[#F1C40F]"
+                      >
+                        Descargar demo
+                      </a>
+                    ) : (
+                      <span className="inline-flex items-center justify-center rounded-full border border-black/10 px-6 py-3 text-sm font-semibold text-[#2E2E2E]/70">
+                        Demo disponible pronto
+                      </span>
+                    )}
+                    <a
+                      href="https://wa.me/18295344286?text=Estoy%20interesado%20en%20un%20software,%20me%20gustaria%20su%20ayuda"
+                      className="inline-flex items-center justify-center rounded-full border border-black/10 px-6 py-3 text-sm font-semibold text-[#2E2E2E] transition hover:border-black/30"
+                    >
+                      Solicitar cotización
+                    </a>
+                  </div>
+                </div>
+                <div className="rounded-2xl border border-black/10 bg-white p-6 shadow">
+                  <h4 className="text-lg font-semibold text-[#2E2E2E]">Apps incluidas</h4>
+                  <ul className="mt-4 space-y-3 text-sm text-[#2E2E2E]/70">
+                    <li className="flex gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" />
+                      FULLPOS (POS principal) para ventas rápidas e inventario.
+                    </li>
+                    <li className="flex gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" />
+                      FULLPOS OWNER con dashboards de ventas, gastos y caja.
+                    </li>
+                    <li className="flex gap-3">
+                      <CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" />
+                      Catálogos exportables y cotizaciones con vista móvil/desktop.
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Apps / Screens */}
+        <section id="apps" className="mt-20 scroll-mt-24">
+          <div className="grid gap-8 lg:grid-cols-2">
+            <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-xl">
+              <h3 className="text-2xl font-semibold text-[#2E2E2E]">Experiencia de uso premium</h3>
+              <p className="mt-3 text-[#2E2E2E]/70">
+                Dashboards responsivos, catálogos con filtros avanzados, barras de búsqueda compactas y acciones rápidas. Todo optimizado para pantallas pequeñas.
+              </p>
+              <ul className="mt-6 space-y-3 text-sm text-[#2E2E2E]/70">
+                <li className="flex gap-3">
+                  <Smartphone className="mt-0.5 h-5 w-5 text-[#1E88E5]" />
+                  Vistas móviles sin desbordes ni roturas de layout.
+                </li>
+                <li className="flex gap-3">
+                  <FileText className="mt-0.5 h-5 w-5 text-[#1E88E5]" />
+                  Exportación a PDF/Excel con buscador y filtros activos.
+                </li>
+                <li className="flex gap-3">
+                  <BarChart3 className="mt-0.5 h-5 w-5 text-[#1E88E5]" />
+                  Reportes directos a ventas, gastos y cierres con scroll inteligente.
+                </li>
+              </ul>
+            </div>
+            <div className="grid gap-6">
+              <div className="overflow-hidden rounded-3xl border border-black/10 bg-white shadow-xl">
+                <Image
+                  src="/fullpos/fullpos-screen-1.png"
+                  alt="Dashboard FULLPOS"
+                  width={680}
+                  height={460}
+                  className="h-auto w-full object-cover"
+                />
+              </div>
+              <div className="overflow-hidden rounded-3xl border border-black/10 bg-white shadow-xl">
+                <Image
+                  src="/fullpos/fullpos-screen-2.png"
+                  alt="Inventario y reportes FULLPOS"
+                  width={680}
+                  height={460}
+                  className="h-auto w-full object-cover"
+                />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Tecnología */}
+        <section id="tecnologia" className="mt-20 scroll-mt-24">
+          <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-xl lg:p-12">
+            <h3 className="text-3xl font-semibold text-[#2E2E2E]">Tecnología sólida, lista para escalar</h3>
+            <p className="mt-4 text-lg text-[#2E2E2E]/70">
+              Backend Node/Express con Prisma y PostgreSQL. Seguridad por roles, JWT y aislamiento por companyId en cada consulta. Arquitectura preparada para crecer contigo.
+            </p>
+            <div className="mt-8 grid gap-6 md:grid-cols-2">
+              <div className="rounded-2xl bg-[#F7F7F7] p-6">
+                <h4 className="text-lg font-semibold text-[#2E2E2E]">Módulos clave</h4>
+                <ul className="mt-4 space-y-3 text-sm text-[#2E2E2E]/70">
+                  <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" /> Autenticación con refresh tokens y authGuard.</li>
+                  <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" /> Reportes de ventas por día, gastos y cierres.</li>
+                  <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" /> CRUD completo para productos, gastos y empresas.</li>
+                </ul>
+              </div>
+              <div className="rounded-2xl bg-[#F7F7F7] p-6">
+                <h4 className="text-lg font-semibold text-[#2E2E2E]">Beneficios al cliente</h4>
+                <ul className="mt-4 space-y-3 text-sm text-[#2E2E2E]/70">
+                  <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" /> Control total de ventas y gastos con auditoría.</li>
+                  <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" /> Inventario y cotizaciones listos para usar.</li>
+                  <li className="flex gap-3"><CheckCircle2 className="mt-0.5 h-5 w-5 text-[#2ECC71]" /> Diseño adaptable con foco en productividad.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        {/* Detalles de otros productos */}
+        <section id="prestamos" className="mt-20 scroll-mt-24">
+          <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-xl lg:p-12">
+            <h3 className="text-2xl font-semibold text-[#2E2E2E]">Sistema de Préstamos</h3>
+            <p className="mt-4 text-[#2E2E2E]/70">
+              Plataforma para controlar préstamos, cobros automáticos, intereses, moras y reportes financieros. Disponible próximamente.
+            </p>
+          </div>
+        </section>
+
+        <section id="contabilidad" className="mt-12 scroll-mt-24">
+          <div className="rounded-3xl border border-black/10 bg-white p-8 shadow-xl lg:p-12">
+            <h3 className="text-2xl font-semibold text-[#2E2E2E]">Sistema de Contabilidad</h3>
+            <p className="mt-4 text-[#2E2E2E]/70">
+              Software contable con balances, reportes y control fiscal para empresas. Disponible próximamente.
+            </p>
+          </div>
+        </section>
+
+        {/* Contacto */}
+        <section id="contacto" className="mt-20 scroll-mt-24">
+          <div className="rounded-3xl bg-gradient-to-r from-[#1E88E5] via-[#2E2E2E] to-[#2E2E2E] px-8 py-14 text-center text-white shadow-2xl">
+            <h3 className="text-3xl font-semibold">¿Listo para impulsar tu negocio?</h3>
+            <p className="mx-auto mt-4 max-w-2xl text-white/80">
+              Agenda una demo personalizada o solicita una propuesta para FULLPOS y el ecosistema de Jr Digital.
+            </p>
+            <div className="mt-8 flex flex-wrap justify-center gap-4">
+              <a
+                href="https://wa.me/18295344286?text=Estoy%20interesado%20en%20un%20software,%20me%20gustaria%20su%20ayuda"
+                className="inline-flex items-center justify-center rounded-full bg-[#F39C12] px-8 py-3 text-sm font-semibold text-white transition hover:bg-[#F1C40F]"
+              >
+                Hablar con un asesor
+              </a>
+              <a
+                href="#fullpos"
+                className="inline-flex items-center justify-center rounded-full border border-white/40 px-8 py-3 text-sm font-semibold text-white transition hover:border-white"
+              >
+                Ver FULLPOS
+              </a>
+            </div>
+          </div>
+        </section>
+      </main>
+
+      {/* Footer */}
+      <footer className="border-t border-black/10 bg-gradient-to-r from-[#1E88E5] via-[#2E2E2E] to-[#2E2E2E] text-white">
+        <div className="mx-auto flex max-w-7xl flex-col items-center justify-between gap-4 px-4 py-10 sm:px-6 lg:flex-row lg:px-8">
+          <div className="flex items-center gap-3">
+            <Image src="/logo_sinfondo.png" alt="Jr Digital Logo" width={48} height={48} className="h-10 w-10 object-contain" />
+            <p className="text-sm text-white/70">&copy; {new Date().getFullYear()} Jr Digital. Todos los derechos reservados.</p>
+          </div>
+          <div className="flex items-center gap-6 text-sm text-white/70">
+            <a href="#" className="transition hover:text-white">Términos</a>
+            <a href="#" className="transition hover:text-white">Privacidad</a>
+          </div>
+        </div>
+      </footer>
+    </div>
+  );
+}

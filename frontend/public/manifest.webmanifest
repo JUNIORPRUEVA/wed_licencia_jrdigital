@@ -1,0 +1,23 @@
+{
+  "name": "Jr Digital",
+  "short_name": "Jr Digital",
+  "description": "Software empresarial a la medida: POS, préstamos y contabilidad.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#FFFFFF",
+  "theme_color": "#1E88E5",
+  "icons": [
+    {
+      "src": "/logo3.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/logo3.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}

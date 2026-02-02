@@ -2,16 +2,17 @@
   "name": "fulltech-licensing-monorepo",
   "private": true,
   "workspaces": [
-    "apps/*",
+    "backend",
+    "frontend",
     "packages/*"
   ],
   "scripts": {
-    "dev": "concurrently -n API,WEB -c cyan,green \"npm -w apps/api run dev\" \"npm -w apps/web run dev\"",
-    "build": "npm -w apps/api run build && npm -w apps/web run build",
-    "lint": "npm -w apps/web run lint",
-    "typecheck": "npm -w apps/api run build && npm -w apps/web run build",
-    "db:migrate": "npm -w apps/api run db:migrate",
-    "db:seed": "npm -w apps/api run db:seed",
+    "dev": "concurrently -n API,WEB -c cyan,green \"npm -w backend run dev\" \"npm -w frontend run dev\"",
+    "build": "npm -w backend run build && npm -w frontend run build",
+    "lint": "npm -w frontend run lint",
+    "typecheck": "npm -w backend run build && npm -w frontend run build",
+    "db:migrate": "npm -w backend run db:migrate",
+    "db:seed": "npm -w backend run db:seed",
     "qa:auth": "node scripts/qa-auth.mjs http://localhost:3000"
   },
   "devDependencies": {
