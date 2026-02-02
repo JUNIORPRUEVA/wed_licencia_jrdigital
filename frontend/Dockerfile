@@ -5,6 +5,9 @@ FROM node:20-bookworm-slim AS base
 FROM base AS deps
 WORKDIR /app
 
+# Force dev + optional deps during build (Easypanel may set NODE_ENV=production)
+ENV NODE_ENV=development
+
 # Copy root package files for workspace resolution
 COPY package.json package-lock.json ./
 COPY packages/crypto/package.json ./packages/crypto/
@@ -12,7 +15,7 @@ COPY packages/shared/package.json ./packages/shared/
 COPY frontend/package.json ./frontend/
 
 # Install dependencies
-RUN npm ci --workspace=web --workspace=@fulltech/shared --workspace=@fulltech/crypto
+RUN npm ci --include=dev --include=optional --workspace=web --workspace=@fulltech/shared --workspace=@fulltech/crypto
 
 # Build frontend
 FROM base AS builder
