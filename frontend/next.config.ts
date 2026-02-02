@@ -10,6 +10,7 @@ const withPWA = withPWAInit({
 
 const nextConfig: NextConfig = {
   transpilePackages: ["@fulltech/shared", "@fulltech/crypto"],
+  output: "standalone", // Para Docker deployment
   experimental: {
     // Keep App Router stable behavior
   },

@@ -1,27 +1,54 @@
 # Monorepo
 # Node modules inside each package
 **/node_modules/
+**/package-lock.json
 
 # Next
 **/.next/
 **/out/
+**/.next-env.d.ts
 
 # Builds
 **/dist/
 **/build/
+**/tsconfig.tsbuildinfo
 
 # Logs
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
+**/logs/
+**/*.log
 
-# Env
-.env*
+# Environment
+.env
+.env.local
+.env.*.local
 
 # Prisma
 **/prisma/dev.db
+**/prisma/dev.db-journal
 
-# OS
+# IDE & Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
 .DS_Store
 Thumbs.db
+
+# OS
+*.exe
+*.dll
+*.dylib
+
+# Tests
+**/coverage/
+**/.nyc_output/
+
+# Temporary files
+temp-key-gen.mjs
+**/.DELETE*
+**/*.DELETE*
