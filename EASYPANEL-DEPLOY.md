@@ -17,11 +17,15 @@
    NODE_ENV=production
    PORT=4000
    DATABASE_URL=postgresql://user:password@host:5432/dbname
-   JWT_SECRET=tu-secret-key-seguro-aqui
-   JWT_REFRESH_SECRET=otro-secret-key-seguro-aqui
-   CORS_ORIGIN=https://tu-frontend.easypanel.host
-   OFFLINE_SIGNING_KEY=tu-clave-ed25519-privada
-   OFFLINE_VERIFICATION_KEY=tu-clave-ed25519-publica
+   ADMIN_EMAIL=admin@fulltech.local
+   ADMIN_PASSWORD=Admin123!
+   AUTH_JWT_SECRET=tu-auth-jwt-secret-minimo-32-caracteres
+   ACTIVATION_JWT_SECRET=tu-activation-jwt-secret-minimo-32-caracteres
+   AUTH_ACCESS_TTL_MIN=30
+   AUTH_REFRESH_TTL_DAYS=30
+   COOKIE_SECURE=true
+   # COOKIE_DOMAIN=.midominio.com
+   OFFLINE_ED25519_PRIVATE_KEY_B64=tu-clave-privada-ed25519-base64
    ```
 
 5. **Port Mapping:**
@@ -92,16 +96,22 @@ PORT=4000
 # Database
 DATABASE_URL=postgresql://user:pass@postgres-service:5432/fulltech
 
-# JWT
-JWT_SECRET=tu-jwt-secret-minimo-32-caracteres
-JWT_REFRESH_SECRET=tu-refresh-secret-minimo-32-caracteres
+# Admin seed
+ADMIN_EMAIL=admin@fulltech.local
+ADMIN_PASSWORD=Admin123!
 
-# CORS
-CORS_ORIGIN=https://tu-dominio.com
+# Auth + tokens
+AUTH_JWT_SECRET=tu-auth-jwt-secret-minimo-32-caracteres
+ACTIVATION_JWT_SECRET=tu-activation-jwt-secret-minimo-32-caracteres
+AUTH_ACCESS_TTL_MIN=30
+AUTH_REFRESH_TTL_DAYS=30
 
-# Offline Licensing (Ed25519)
-OFFLINE_SIGNING_KEY=clave-privada-base64
-OFFLINE_VERIFICATION_KEY=clave-publica-base64
+# Cookies
+COOKIE_SECURE=true
+# COOKIE_DOMAIN=.midominio.com
+
+# Offline signing
+OFFLINE_ED25519_PRIVATE_KEY_B64=tu-clave-privada-ed25519-base64
 ```
 
 ### Frontend (.env en Easypanel):

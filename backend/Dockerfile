@@ -20,7 +20,6 @@ WORKDIR /app
 
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/backend/node_modules ./backend/node_modules
 COPY --from=deps /app/packages ./packages
 
 # Copy source code
@@ -44,7 +43,6 @@ ENV NODE_ENV=production
 # Copy necessary files
 COPY --from=builder /app/node_modules ./node_modules
 COPY --from=builder /app/backend/dist ./backend/dist
-COPY --from=builder /app/backend/node_modules ./backend/node_modules
 COPY --from=builder /app/backend/prisma ./backend/prisma
 COPY --from=builder /app/backend/package.json ./backend/
 COPY --from=builder /app/packages ./packages
@@ -54,4 +52,4 @@ WORKDIR /app/backend
 EXPOSE 4000
 
 # Run migrations and start
-CMD ["sh", "-c", "npx prisma migrate deploy && node dist/src/index.js"]
+CMD ["sh", "-c", "npx prisma migrate deploy && npx tsx dist/src/index.js"]
