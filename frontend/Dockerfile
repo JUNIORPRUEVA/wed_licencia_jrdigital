@@ -25,10 +25,13 @@ RUN npm install --include=dev --include=optional --no-audit --no-fund --workspac
 # Some build environments end up without the platform package even with optional deps enabled.
 ARG LIGHTNINGCSS_VERSION=1.30.2
 RUN set -eu; \
-    node -e "const { familySync } = require('detect-libc'); const libc = (familySync && familySync()) || 'gnu'; const os = process.platform; const arch = process.arch; const pkg = `lightningcss-${os}-${arch}-${libc}`; const file = `lightningcss.${os}-${arch}-${libc}.node`; console.log(pkg); console.log(file);" > /tmp/lcss_meta.txt; \
-    pkg=$(sed -n '1p' /tmp/lcss_meta.txt); \
-    file=$(sed -n '2p' /tmp/lcss_meta.txt); \
-    npm -w web install --no-save --no-audit --no-fund "$pkg@$LIGHTNINGCSS_VERSION"; \
+    os="$(node -p "process.platform")"; \
+    arch="$(node -p "process.arch")"; \
+    libc="$(node -e "const { familySync } = require('detect-libc'); const v = (familySync && familySync()) || 'gnu'; process.stdout.write(String(v));")"; \
+    pkg="lightningcss-${os}-${arch}-${libc}"; \
+    file="lightningcss.${os}-${arch}-${libc}.node"; \
+    echo "Using lightningcss platform package: $pkg@$LIGHTNINGCSS_VERSION"; \
+    npm -w web install --no-save --no-audit --no-fund "${pkg}@${LIGHTNINGCSS_VERSION}"; \
     found=$(find node_modules frontend/node_modules -name "$file" -print -quit || true); \
     if [ -z "$found" ]; then echo "Missing lightningcss native file: $file"; exit 1; fi; \
     cp "$found" "frontend/node_modules/lightningcss/$file"; \
