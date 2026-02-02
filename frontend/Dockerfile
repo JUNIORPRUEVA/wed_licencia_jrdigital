@@ -5,6 +5,10 @@ FROM node:20-bookworm-slim AS base
 FROM base AS deps
 WORKDIR /app
 
+# Cache buster (Easypanel provides this build-arg)
+ARG GIT_SHA
+RUN echo "deps stage git sha: ${GIT_SHA:-unknown}"
+
 # Force dev + optional deps during build (Easypanel may set NODE_ENV=production)
 ENV NODE_ENV=development \
     npm_config_ignore_scripts=false \
@@ -28,6 +32,7 @@ RUN set -eu; \
     os="$(node -p "process.platform")"; \
     arch="$(node -p "process.arch")"; \
     libc_raw="$(node -e "const { familySync } = require('detect-libc'); const v = (familySync && familySync()) || 'glibc'; process.stdout.write(String(v));")"; \
+    echo "Detected platform: os=$os arch=$arch libc_raw=$libc_raw"; \
     case "$libc_raw" in \
       glibc|gnu) libc="gnu" ;; \
       musl) libc="musl" ;; \
@@ -49,6 +54,7 @@ RUN set -eu; \
     os="$(node -p "process.platform")"; \
     arch="$(node -p "process.arch")"; \
     libc_raw="$(node -e "const { familySync } = require('detect-libc'); const v = (familySync && familySync()) || 'glibc'; process.stdout.write(String(v));")"; \
+    echo "Detected platform for oxide: os=$os arch=$arch libc_raw=$libc_raw oxide_ver=$oxide_ver"; \
     case "$libc_raw" in \
       glibc|gnu) libc="gnu" ;; \
       musl) libc="musl" ;; \
