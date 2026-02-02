@@ -22,7 +22,17 @@ COPY frontend/package.json ./frontend/
 RUN npm install --include=dev --include=optional --no-audit --no-fund --workspace=web --workspace=@fulltech/shared --workspace=@fulltech/crypto
 
 # Ensure native bindings are present (lightningcss ships platform-specific binaries)
-RUN npm -w web rebuild lightningcss --foreground-scripts
+# Some build environments end up without the platform package even with optional deps enabled.
+ARG LIGHTNINGCSS_VERSION=1.30.2
+RUN set -eu; \
+    node -e "const { familySync } = require('detect-libc'); const libc = (familySync && familySync()) || 'gnu'; const os = process.platform; const arch = process.arch; const pkg = `lightningcss-${os}-${arch}-${libc}`; const file = `lightningcss.${os}-${arch}-${libc}.node`; console.log(pkg); console.log(file);" > /tmp/lcss_meta.txt; \
+    pkg=$(sed -n '1p' /tmp/lcss_meta.txt); \
+    file=$(sed -n '2p' /tmp/lcss_meta.txt); \
+    npm -w web install --no-save --no-audit --no-fund "$pkg@$LIGHTNINGCSS_VERSION"; \
+    found=$(find node_modules frontend/node_modules -name "$file" -print -quit || true); \
+    if [ -z "$found" ]; then echo "Missing lightningcss native file: $file"; exit 1; fi; \
+    cp "$found" "frontend/node_modules/lightningcss/$file"; \
+    npm -w web rebuild lightningcss --foreground-scripts
 
 # Sanity-check native optional deps (fails fast if the Linux binary wasn't installed)
 RUN cd frontend && node -e "require('lightningcss')"
