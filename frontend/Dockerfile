@@ -98,9 +98,24 @@ WORKDIR /app/frontend
 # Build Next.js app
 RUN npm run build
 
+# Normalize standalone output location.
+# Depending on workspace/root detection, Next can output:
+# - .next/standalone/server.js
+# - .next/standalone/frontend/server.js
+RUN set -eu; \
+    rm -rf /app/standalone-out; \
+    mkdir -p /app/standalone-out; \
+    if [ -d ".next/standalone/frontend" ]; then \
+      echo "Using standalone layout: .next/standalone/frontend"; \
+      cp -a .next/standalone/frontend/. /app/standalone-out/; \
+    else \
+      echo "Using standalone layout: .next/standalone"; \
+      cp -a .next/standalone/. /app/standalone-out/; \
+    fi
+
 # Production image
 FROM base AS runner
-WORKDIR /app/frontend
+WORKDIR /app
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -113,8 +128,7 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy built app
 COPY --from=builder /app/frontend/public ./public
-# Next standalone output inside a workspace ends up under .next/standalone/frontend/*
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone/frontend ./
+COPY --from=builder --chown=nextjs:nodejs /app/standalone-out ./
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static
 
 USER nextjs
