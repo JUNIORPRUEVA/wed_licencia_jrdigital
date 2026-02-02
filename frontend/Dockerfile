@@ -121,6 +121,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 ARG PORT=3000
+ARG NEXT_PUBLIC_API_URL=/api
+ARG API_PROXY_TARGET=http://localhost:4000
 
 # Create user
 RUN addgroup --system --gid 1001 nodejs
@@ -137,5 +139,9 @@ EXPOSE 3000
 
 ENV PORT=$PORT
 ENV HOSTNAME="0.0.0.0"
+
+# Make proxy/public API config available at runtime too
+ENV NEXT_PUBLIC_API_URL=$NEXT_PUBLIC_API_URL
+ENV API_PROXY_TARGET=$API_PROXY_TARGET
 
 CMD ["node", "server.js"]
