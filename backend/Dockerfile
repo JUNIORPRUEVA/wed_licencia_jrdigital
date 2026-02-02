@@ -1,6 +1,11 @@
 # Backend Dockerfile (Express + Prisma) for Easypanel
 FROM node:20-bookworm-slim AS base
 
+# Prisma engines may require OpenSSL libs; also avoids runtime warnings.
+RUN apt-get update -y \
+    && apt-get install -y --no-install-recommends openssl ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
 FROM base AS deps
 WORKDIR /app
 
@@ -32,6 +37,9 @@ RUN npm run db:generate && npm run build
 FROM base AS runner
 WORKDIR /app
 ENV NODE_ENV=production
+
+# Allow extension-less ESM imports emitted by tsc (moduleResolution=bundler)
+ENV NODE_OPTIONS="--experimental-specifier-resolution=node"
 
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nodejs
