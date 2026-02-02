@@ -50,5 +50,5 @@ EXPOSE 4000
 HEALTHCHECK --interval=30s --timeout=3s --start-period=20s --retries=3 \
     CMD node -e "fetch('http://127.0.0.1:' + (process.env.PORT||4000) + '/health').then(r=>process.exit(r.ok?0:1)).catch(()=>process.exit(1))"
 
-CMD ["sh", "-lc", "cd backend && npx prisma migrate deploy && node dist/src/index.js"]
+CMD ["sh", "-lc", "cd backend; ok=0; for i in $(seq 1 30); do if npx prisma migrate deploy; then ok=1; break; fi; echo \"prisma migrate deploy failed (attempt $i/30), retrying...\"; sleep 2; done; [ \"$ok\" = \"1\" ] || exit 1; node dist/src/index.js"]
 

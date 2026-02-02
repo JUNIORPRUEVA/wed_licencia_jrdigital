@@ -94,7 +94,7 @@ RUN npm run build
 
 # Production image
 FROM base AS runner
-WORKDIR /app
+WORKDIR /app/frontend
 
 ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
@@ -107,7 +107,8 @@ RUN adduser --system --uid 1001 nextjs
 
 # Copy built app
 COPY --from=builder /app/frontend/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone ./
+# Next standalone output inside a workspace ends up under .next/standalone/frontend/*
+COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/standalone/frontend ./
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static
 
 USER nextjs
