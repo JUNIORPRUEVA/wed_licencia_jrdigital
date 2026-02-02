@@ -42,6 +42,23 @@ RUN set -eu; \
     cp "$found" "frontend/node_modules/lightningcss/$file"; \
     npm -w web rebuild lightningcss --foreground-scripts
 
+# Ensure Tailwind v4 native engine (@tailwindcss/oxide) binding exists.
+# npm sometimes skips optionalDependencies in Docker builds; Next build will fail without it.
+RUN set -eu; \
+    oxide_ver="$(node -p "require('./frontend/node_modules/@tailwindcss/oxide/package.json').version")"; \
+    os="$(node -p "process.platform")"; \
+    arch="$(node -p "process.arch")"; \
+    libc_raw="$(node -e "const { familySync } = require('detect-libc'); const v = (familySync && familySync()) || 'glibc'; process.stdout.write(String(v));")"; \
+    case "$libc_raw" in \
+      glibc|gnu) libc="gnu" ;; \
+      musl) libc="musl" ;; \
+      *) libc="gnu" ;; \
+    esac; \
+    pkg="@tailwindcss/oxide-${os}-${arch}-${libc}"; \
+    echo "Using tailwindcss/oxide platform package: $pkg@$oxide_ver"; \
+    npm -w web install --no-save --no-audit --no-fund "${pkg}@${oxide_ver}"; \
+    cd frontend && node -e "require('@tailwindcss/oxide')"
+
 # Sanity-check native optional deps (fails fast if the Linux binary wasn't installed)
 RUN cd frontend && node -e "require('lightningcss')"
 
