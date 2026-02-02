@@ -6,10 +6,11 @@ FROM base AS deps
 WORKDIR /app
 
 # Force dev + optional deps during build (Easypanel may set NODE_ENV=production)
-ENV NODE_ENV=development
-	# Some CI/build environments set ignore-scripts=true, which breaks native deps like lightningcss.
-	npm_config_ignore_scripts=false
-	npm_config_optional=true
+ENV NODE_ENV=development \
+    npm_config_ignore_scripts=false \
+    npm_config_optional=true
+
+# Some CI/build environments set ignore-scripts=true, which breaks native deps like lightningcss.
 
 # Copy root package files for workspace resolution
 COPY package.json package-lock.json ./
