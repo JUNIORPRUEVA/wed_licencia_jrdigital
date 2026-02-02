@@ -7,6 +7,9 @@ WORKDIR /app
 
 # Force dev + optional deps during build (Easypanel may set NODE_ENV=production)
 ENV NODE_ENV=development
+	# Some CI/build environments set ignore-scripts=true, which breaks native deps like lightningcss.
+	npm_config_ignore_scripts=false
+	npm_config_optional=true
 
 # Copy root package files for workspace resolution
 COPY package.json package-lock.json ./
@@ -16,6 +19,9 @@ COPY frontend/package.json ./frontend/
 
 # Install dependencies
 RUN npm install --include=dev --include=optional --no-audit --no-fund --workspace=web --workspace=@fulltech/shared --workspace=@fulltech/crypto
+
+# Ensure native bindings are present (lightningcss ships platform-specific binaries)
+RUN npm -w web rebuild lightningcss --foreground-scripts
 
 # Sanity-check native optional deps (fails fast if the Linux binary wasn't installed)
 RUN cd frontend && node -e "require('lightningcss')"
