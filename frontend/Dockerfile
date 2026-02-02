@@ -27,7 +27,12 @@ ARG LIGHTNINGCSS_VERSION=1.30.2
 RUN set -eu; \
     os="$(node -p "process.platform")"; \
     arch="$(node -p "process.arch")"; \
-    libc="$(node -e "const { familySync } = require('detect-libc'); const v = (familySync && familySync()) || 'gnu'; process.stdout.write(String(v));")"; \
+    libc_raw="$(node -e "const { familySync } = require('detect-libc'); const v = (familySync && familySync()) || 'glibc'; process.stdout.write(String(v));")"; \
+    case "$libc_raw" in \
+      glibc|gnu) libc="gnu" ;; \
+      musl) libc="musl" ;; \
+      *) libc="gnu" ;; \
+    esac; \
     pkg="lightningcss-${os}-${arch}-${libc}"; \
     file="lightningcss.${os}-${arch}-${libc}.node"; \
     echo "Using lightningcss platform package: $pkg@$LIGHTNINGCSS_VERSION"; \

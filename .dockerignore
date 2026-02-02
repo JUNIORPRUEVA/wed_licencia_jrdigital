@@ -1,0 +1,21 @@
+# VCS / editor
+.git
+.vs
+.vscode
+
+# Node
+**/node_modules
+
+# Builds
+**/.next
+**/dist
+**/build
+**/out
+
+# Env / secrets
+.env
+.env.*
+
+# Logs
+**/*.log
+
