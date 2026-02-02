@@ -1,5 +1,5 @@
 # Frontend Dockerfile for Easypanel
-FROM node:20-alpine AS base
+FROM node:20-bookworm-slim AS base
 
 # Install dependencies only when needed
 FROM base AS deps
@@ -7,11 +7,12 @@ WORKDIR /app
 
 # Copy root package files for workspace resolution
 COPY package.json package-lock.json ./
+COPY packages/crypto/package.json ./packages/crypto/
 COPY packages/shared/package.json ./packages/shared/
 COPY frontend/package.json ./frontend/
 
 # Install dependencies
-RUN npm ci --workspace=web --workspace=@fulltech/shared
+RUN npm ci --workspace=web --workspace=@fulltech/shared --workspace=@fulltech/crypto
 
 # Build frontend
 FROM base AS builder
@@ -19,12 +20,11 @@ WORKDIR /app
 
 # Copy dependencies
 COPY --from=deps /app/node_modules ./node_modules
-COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
 COPY --from=deps /app/packages ./packages
 
 # Copy source code
 COPY frontend ./frontend
-COPY packages/shared ./packages/shared
+COPY packages ./packages
 COPY tsconfig.base.json ./
 
 WORKDIR /app/frontend
