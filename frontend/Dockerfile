@@ -129,6 +129,10 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Copy built app
+# Next standalone `server.js` requires `next` at runtime; ensure node_modules exist.
+COPY --from=deps /app/node_modules ./node_modules
+COPY --from=deps /app/frontend/node_modules ./frontend/node_modules
+
 COPY --from=builder /app/frontend/public ./public
 COPY --from=builder --chown=nextjs:nodejs /app/standalone-out ./
 COPY --from=builder --chown=nextjs:nodejs /app/frontend/.next/static ./.next/static
